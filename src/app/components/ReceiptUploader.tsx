@@ -27,12 +27,30 @@ export default function ReceiptUploader() {
   const [preview, setPreview] = useState<string>('')
   const [results, setResults] = useState<any>(null)
   const [loading, setLoading] = useState(false)
+  const [email, setEmail] = useState('')
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
       setImage(file)
       setPreview(URL.createObjectURL(file))
+    }
+  }
+
+  const saveItems = async (items: any) => {
+    try {
+      await fetch('/api/save-items', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          items,
+          email
+        }),
+      })
+    } catch (error) {
+      console.error('Error saving items:', error)
     }
   }
 
@@ -50,6 +68,7 @@ export default function ReceiptUploader() {
       })
       const data = await response.json()
       setResults(data)
+      await saveItems(data)
     } catch (error) {
       console.error('Error analyzing receipt:', error)
     } finally {
@@ -165,6 +184,15 @@ export default function ReceiptUploader() {
             )
           ))}
           </div>
+
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Enter your email for expiry notifications"
+            className="w-full p-2 border rounded mb-4"
+            required
+          />
         </div>
       )}
     </div>
