@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import { toast } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 type ItemDetails = {
   expiryDate: string
@@ -28,7 +30,8 @@ export default function ReceiptUploader() {
   const [results, setResults] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [email, setEmail] = useState('')
-
+  const [isSaving, setIsSaving] = useState(false)
+  const [isNotificationsEnabled, setIsNotificationsEnabled] = useState(false)
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
@@ -68,7 +71,6 @@ export default function ReceiptUploader() {
       })
       const data = await response.json()
       setResults(data)
-      await saveItems(data)
     } catch (error) {
       console.error('Error analyzing receipt:', error)
     } finally {
@@ -175,14 +177,18 @@ export default function ReceiptUploader() {
             </table>
           </div>
 
-          <div className="mt-4 space-y-2">
-            {Object.entries(results as Results).map(([item, details], index) => (
-              details.notes && (
-                <div key={index} className="text-sm text-gray-600">
-              <span className="font-medium">{item}:</span> {details.notes}
+          <div>
+            <h3 className="text-xl font-semibold mb-4 mt-8">Additional Notes</h3>
+            <div className="space-y-2">
+              {Object.entries(results as Results).map(([item, details], index) => (
+                details.notes && (
+                  <div key={index} className="p-3 bg-gray-50/50 rounded border border-gray-100">
+                    <h4 className="text-sm mb-0.5">{item}</h4>
+                    <p className="text-xs">{details.notes}</p>
+                  </div>
+                )
+              ))}
             </div>
-            )
-          ))}
           </div>
 
           <input
@@ -190,9 +196,32 @@ export default function ReceiptUploader() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Enter your email for expiry notifications"
-            className="w-full p-2 border rounded mb-4"
+            className="w-full p-2 border rounded mt-8 mb-4 text-black"
             required
           />
+
+          <button
+            onClick={async () => {
+              try {
+                setIsSaving(true)
+                await saveItems(results)
+                setIsSaving(false)
+                toast.success('Notifications enabled successfully!')
+                setIsNotificationsEnabled(true)
+              } catch (error) {
+                setIsSaving(false)
+                toast.error('Failed to enable notifications')
+              }
+            }}
+            disabled={isSaving || isNotificationsEnabled}
+            className={`${
+              isSaving ? 'bg-blue-400' :
+              isNotificationsEnabled ? 'bg-gray-400 cursor-not-allowed' :
+              'bg-blue-500 hover:bg-blue-600'
+            } text-white px-4 py-2 rounded flex items-center justify-center transition-colors`}
+          >
+            {isNotificationsEnabled ? 'Notifications Enabled' : 'Enable Notifications'}
+          </button>
         </div>
       )}
     </div>

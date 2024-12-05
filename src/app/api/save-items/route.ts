@@ -5,7 +5,7 @@ import { ExpiryItem } from '../../../../lib/types'
 
 export async function POST(request: NextRequest) {
   try {
-    const { items, email } = await request.json()
+    const { items, email }: { items: ExpiryItem[], email: string } = await request.json()
 
     for (const [item, details] of Object.entries(items)) {
       await saveItem({

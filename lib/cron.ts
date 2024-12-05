@@ -1,5 +1,5 @@
 import cron from 'node-cron'
-import { getItems } from './db'
+// import { getItems } from './db'
 
 export const startCronJobs = () => {
   // Run every day at midnight

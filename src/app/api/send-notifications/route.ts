@@ -22,7 +22,7 @@ export async function POST() {
       
       if (itemDate.toDateString() === threeDaysFromNow.toDateString()) {
         await resend.emails.send({
-          from: 'Fresh Track <notifications@yourdomain.com>',
+          from: 'Fresh Track <notifications@freshtrack.com>',
           to: item.email,
           subject: `🚨 ${item.item} is expiring soon!`,
           html: `
