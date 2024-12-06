@@ -1,15 +1,25 @@
 import cron from 'node-cron'
-// import { getItems } from './db'
 
-export const startCronJobs = () => {
-  // Run every day at midnight
-  cron.schedule('0 0 * * *', async () => {
+export function startCronJobs() {
+  console.log('Starting cron jobs')
+  if (!process.env.NEXT_PUBLIC_API_URL) {
+    console.error('NEXT_PUBLIC_API_URL is not set')
+    return
+  }
+  // Run every day at midday 0 12 * * *
+  cron.schedule('0 12 * * *', async () => {
+    console.log('Running cron job')
     try {
-      await fetch('/api/send-notifications', {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/send-notifications`, {
         method: 'POST'
       })
     } catch (error) {
       console.error('Failed to run notification cron job:', error)
     }
   })
-} 
+}
+
+export function stopCronJobs() {
+  cron.getTasks().forEach(task => task.stop())
+}
+  
