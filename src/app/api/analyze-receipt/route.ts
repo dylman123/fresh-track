@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
-
+import { AnalyzedResults } from '../../../../lib/types'
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 })
@@ -81,7 +81,14 @@ Base all expiry dates on today's date (${today}) as the purchase date.`
     })
 
     // Parse the response
-    const items = JSON.parse(message.content[0].text)
+    let items: AnalyzedResults = {}
+    if (message.content[0].type === 'text') {
+      items = JSON.parse(message.content[0].text)
+    }
+
+    if (Object.keys(items).length === 0) {
+      return NextResponse.json({ error: 'Failed to analyze receipt' }, { status: 500 })
+    }
 
     // Sort items by expiry date
     const sortedItems = Object.entries(items)

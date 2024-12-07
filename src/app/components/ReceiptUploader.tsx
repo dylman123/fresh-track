@@ -4,17 +4,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-
-type ItemDetails = {
-  expiryDate: string
-  category: string
-  storageType: string
-  notes?: string
-}
-
-type Results = {
-  [key: string]: ItemDetails
-}
+import { AnalyzedResults } from '../../../lib/types'
 
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('en-US', {
@@ -27,7 +17,7 @@ const formatDate = (dateString: string) => {
 export default function ReceiptUploader() {
   const [image, setImage] = useState<File | null>(null)
   const [preview, setPreview] = useState<string>('')
-  const [results, setResults] = useState<any>(null)
+  const [results, setResults] = useState<AnalyzedResults | null>(null)
   const [loading, setLoading] = useState(false)
   const [email, setEmail] = useState('')
   const [isSaving, setIsSaving] = useState(false)
@@ -40,7 +30,7 @@ export default function ReceiptUploader() {
     }
   }
 
-  const saveItems = async (items: any) => {
+  const saveItems = async (items: AnalyzedResults) => {
     try {
       await fetch('/api/save-items', {
         method: 'POST',
@@ -70,7 +60,7 @@ export default function ReceiptUploader() {
         body: formData,
       })
       const data = await response.json()
-      setResults(data)
+      setResults(data as AnalyzedResults)
     } catch (error) {
       console.error('Error analyzing receipt:', error)
     } finally {
@@ -133,7 +123,7 @@ export default function ReceiptUploader() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {Object.entries(results as Results).map(([item, details], index) => {
+                {Object.entries(results).map(([item, details], index) => {
                   const expiryDate = new Date(details.expiryDate)
                   const today = new Date()
                   const daysUntilExpiry = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
@@ -180,7 +170,7 @@ export default function ReceiptUploader() {
           <div>
             <h3 className="text-xl font-semibold mb-4 mt-8">Additional Notes</h3>
             <div className="space-y-2">
-              {Object.entries(results as Results).map(([item, details], index) => (
+              {Object.entries(results).map(([item, details], index) => (
                 details.notes && (
                   <div key={index} className="p-3 bg-gray-50/50 rounded border border-gray-100">
                     <h4 className="text-sm mb-0.5">{item}</h4>
@@ -208,7 +198,7 @@ export default function ReceiptUploader() {
                 setIsSaving(false)
                 toast.success('Notifications enabled successfully!')
                 setIsNotificationsEnabled(true)
-              } catch (error) {
+              } catch {
                 setIsSaving(false)
                 toast.error('Failed to enable notifications')
               }

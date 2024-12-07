@@ -1,0 +1,13 @@
+{
+  "functions": {
+    "app/api/analyze-receipt/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/send-notifications/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/save-items/route.ts": {
+      "maxDuration": 60
+    }
+  }
+} 

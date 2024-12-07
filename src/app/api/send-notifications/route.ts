@@ -51,7 +51,7 @@ Remember to use these items soon to avoid food waste!`
     }
 
     return NextResponse.json({ success: true })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to send notifications' }, { status: 500 })
   }
 } 
