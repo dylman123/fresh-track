@@ -62,8 +62,8 @@ Base all expiry dates on today's date (${today}) as the purchase date, unless yo
 IMPORTANT: Return ONLY a JSON object with no additional text. Keep notes brief and under 50 characters. The response should start with '{' and end with '}'.`
 
     const message = await anthropic.messages.create({
-      model: 'claude-3-sonnet-20240229',
-      max_tokens: 1024,
+      model: 'claude-3-5-sonnet-20241022',
+      max_tokens: 8192,
       messages: [
         {
           role: 'user',
