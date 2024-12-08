@@ -15,7 +15,16 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes)
     const base64Image = buffer.toString('base64')
 
-    const detailedPrompt = `Today's date is ${today}. This is a grocery receipt. Please analyze the items and provide estimated expiry dates based on these guidelines:
+    const detailedPrompt = `Today's date is ${today}. You are analyzing a grocery receipt. 
+
+IMPORTANT INSTRUCTIONS:
+1. Use EXACTLY the item code shown on the receipt (e.g., "ANGL 4PK PITA BREAD" not "ANGEL CIABATTA BREAD")
+2. Analyze EVERY line item on the receipt - do not skip any items
+3. If you can't determine what an item is, still include it with best-guess expiry dates
+4. Maintain the exact format shown below
+5. Return ONLY the JSON object with no additional text
+
+For expiry dates, use these guidelines:
 
 Fresh Produce:
 - Leafy greens: 5-7 days when refrigerated
@@ -44,10 +53,10 @@ Pantry Items:
 - Cereal: 2-3 months after opening
 - Canned goods: 3-5 days after opening when refrigerated
 
-Please return the response as a JSON object with this structure:
+Return the response as a JSON object with this structure:
 {
-  "itemCode": {
-    "name": "Human readable item name (e.g. Green Seedless Grapes)",
+  "EXACT_ITEM_CODE_FROM_RECEIPT": {
+    "name": "Human readable item name",
     "expiryDate": "YYYY-MM-DD",
     "category": "produce|dairy|meat|pantry",
     "storageType": "refrigerated|room temperature|frozen",
@@ -55,11 +64,11 @@ Please return the response as a JSON object with this structure:
   }
 }
 
-Please set "itemCode" to the line item code from the receipt (e.g. GREEN SDLS GRAPES).
-
-Base all expiry dates on today's date (${today}) as the purchase date, unless you can find a date of purchase on the receipt.
-
-IMPORTANT: Return ONLY a JSON object with no additional text. Keep notes brief and under 50 characters. The response should start with '{' and end with '}'.`
+IMPORTANT: 
+- Use the EXACT item code from the receipt as the key
+- Include ALL items from the receipt
+- Keep notes under 50 characters
+- Return ONLY the JSON object`
 
     const message = await anthropic.messages.create({
       model: 'claude-3-5-sonnet-20241022',
