@@ -7,6 +7,7 @@ export interface ExpiryItem {
 } 
 
 type AnalyzedItemDetails = {
+  name: string
   expiryDate: string
   category: string
   storageType: string

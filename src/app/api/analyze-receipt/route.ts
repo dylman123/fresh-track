@@ -46,15 +46,20 @@ Pantry Items:
 
 Please return the response as a JSON object with this structure:
 {
-  "itemName": {
+  "itemCode": {
+    "name": "Human readable item name (e.g. Green Seedless Grapes)",
     "expiryDate": "YYYY-MM-DD",
     "category": "produce|dairy|meat|pantry",
     "storageType": "refrigerated|room temperature|frozen",
-    "notes": "Optional storage or handling tips"
+    "notes": "Brief storage tip (max 50 chars)"
   }
 }
 
-Base all expiry dates on today's date (${today}) as the purchase date.`
+Please set "itemCode" to the line item code from the receipt (e.g. GREEN SDLS GRAPES).
+
+Base all expiry dates on today's date (${today}) as the purchase date, unless you can find a date of purchase on the receipt.
+
+IMPORTANT: Return ONLY a JSON object with no additional text. Keep notes brief and under 50 characters. The response should start with '{' and end with '}'.`
 
     const message = await anthropic.messages.create({
       model: 'claude-3-sonnet-20240229',
@@ -83,7 +88,36 @@ Base all expiry dates on today's date (${today}) as the purchase date.`
     // Parse the response
     let items: AnalyzedResults = {}
     if (message.content[0].type === 'text') {
-      items = JSON.parse(message.content[0].text)
+      const responseText = message.content[0].text
+      console.log('Raw response:', responseText)
+      
+      try {
+        // Extract JSON from response
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/)
+        if (!jsonMatch) {
+          console.error('No JSON found in response')
+          return NextResponse.json(
+            { error: 'Invalid response format from AI' },
+            { status: 500 }
+          )
+        }
+        // Clean the JSON string
+        const cleanedResponse = jsonMatch[0]
+          .trim()
+          .replace(/,(\s*[}\]])/g, '$1')
+          .replace(/\n/g, '')
+          .replace(/\s+/g, ' ')
+          .replace(/"\s+}/g, '"}')
+          .replace(/}\s+"/g, '}"')
+        
+        items = JSON.parse(cleanedResponse)
+      } catch (parseError) {
+        console.error('JSON Parse Error:', parseError)
+        return NextResponse.json(
+          { error: 'Invalid response format from AI' },
+          { status: 500 }
+        )
+      }
     }
 
     if (Object.keys(items).length === 0) {

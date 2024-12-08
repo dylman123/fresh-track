@@ -60,7 +60,11 @@ export default function ReceiptUploader() {
         body: formData,
       })
       const data = await response.json()
-      setResults(data as AnalyzedResults)
+      if (data.error) {
+        toast.error(data.error)
+      } else {
+        setResults(data as AnalyzedResults)
+      }
     } catch (error) {
       console.error('Error analyzing receipt:', error)
     } finally {
@@ -102,69 +106,77 @@ export default function ReceiptUploader() {
         <div className="mt-8">
           <h2 className="text-xl font-semibold mb-4">Estimated Expiry Dates</h2>
           <div className="bg-white shadow rounded-lg overflow-x">
-            <table className="min-w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Item
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Category
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Storage
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Expiry Date
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {Object.entries(results).map(([item, details], index) => {
-                  const expiryDate = new Date(details.expiryDate)
-                  const today = new Date()
-                  const daysUntilExpiry = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-            
-                  let status
-                  let statusColor
-                  if (daysUntilExpiry < 0) {
-                    status = 'Expired'
-                    statusColor = 'text-red-600 bg-red-100'
-                  } else if (daysUntilExpiry < 7) {
-                    status = 'Expiring Soon'
-                    statusColor = 'text-yellow-600 bg-yellow-100'
-                  } else {
-                    status = 'Good'
-                    statusColor = 'text-green-600 bg-green-100'
-                  }
+            <div className="overflow-x-auto">
+              <table className="min-w-full table-auto">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Item Code
+                    </th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Name
+                    </th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Category
+                    </th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Storage
+                    </th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Expiry Date
+                    </th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {Object.entries(results).map(([item, details], index) => {
+                    const expiryDate = new Date(details.expiryDate)
+                    const today = new Date()
+                    const daysUntilExpiry = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+              
+                    let status
+                    let statusColor
+                    if (daysUntilExpiry < 0) {
+                      status = 'Expired'
+                      statusColor = 'text-red-600 bg-red-100'
+                    } else if (daysUntilExpiry < 7) {
+                      status = 'Expiring Soon'
+                      statusColor = 'text-yellow-600 bg-yellow-100'
+                    } else {
+                      status = 'Good'
+                      statusColor = 'text-green-600 bg-green-100'
+                    }
 
-                  return (
-                     <tr key={index} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {item}
-                    </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">
-                        {details.category}
-                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">
-                        {details.storageType}
+                    return (
+                       <tr key={index} className="hover:bg-gray-50">
+                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {item}
+                        </td>
+                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {details.name}
+                        </td>
+                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">
+                          {details.category}
+                         </td>
+                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">
+                          {details.storageType}
+                        </td>
+                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {formatDate(details.expiryDate)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatDate(details.expiryDate)}
-                    </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColor}`}>
-                          {status}
-                        </span>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm">
+                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColor}`}>
+                            {status}
+                          </span>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
 
           <div>
