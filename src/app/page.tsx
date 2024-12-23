@@ -19,7 +19,7 @@ export default function Home() {
 
         {/* Optional: Add a footer */}
         <footer className="mt-8 text-center text-sm text-gray-200">
-          <p>Never waste food again with Fresh Track</p>
+          <p>Never waste food again</p>
         </footer>
       </div>
     </main>
