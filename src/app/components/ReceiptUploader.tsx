@@ -6,6 +6,7 @@ import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { ExpiryItem } from '../../../lib/types'
 import { formatDate } from '../../../lib/util'
+import exampleReceipt from '../../../public/example.jpeg'
 
 export default function ReceiptUploader() {
   const [image, setImage] = useState<File | null>(null)
@@ -15,12 +16,23 @@ export default function ReceiptUploader() {
   const [email, setEmail] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [isNotificationsEnabled, setIsNotificationsEnabled] = useState(false)
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
       setImage(file)
       setPreview(URL.createObjectURL(file))
     }
+  }
+
+  const showExample = async () => {
+    setPreview(exampleReceipt.src)
+    setResults([])
+    const response = await fetch(exampleReceipt.src)
+    const blob = await response.blob()
+    const file = new File([blob], 'example.jpeg', { type: 'image/jpeg' })
+    setImage(file)
+    setIsNotificationsEnabled(false)
   }
 
   const saveItems = async (items: ExpiryItem[]) => {
@@ -67,6 +79,7 @@ export default function ReceiptUploader() {
 
   return (
     <div className="space-y-4">
+
       <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
         <input
           type="file"
@@ -87,13 +100,22 @@ export default function ReceiptUploader() {
         </div>
       )}
 
-      <button
+      <div className="flex gap-4 mb-4 justify-center">
+        {!preview && <button
+          onClick={showExample}
+          className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded transition-colors"
+        >
+          Use Example Receipt
+        </button>}
+        <button
         onClick={handleSubmit}
         disabled={!image || loading}
         className="bg-blue-500 text-white px-4 py-2 rounded disabled:bg-gray-300"
       >
-        {loading ? 'Analyzing...' : 'Analyze Receipt'}
-      </button>
+          {loading ? 'Analyzing...' : 'Analyze Receipt'}
+        </button>
+      </div>
+
 
       {results.length > 0 && (
         <div className="mt-8">
