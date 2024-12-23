@@ -1,19 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { saveItem } from '../../../../lib/db'
-import { v4 as uuidv4 } from 'uuid'
 import { ExpiryItem } from '../../../../lib/types'
 
 export async function POST(request: NextRequest) {
   try {
     const { items, email }: { items: ExpiryItem[], email: string } = await request.json()
 
-    for (const [item, details] of Object.entries(items)) {
+    for (const item of items) {
+      const { code, name, expiryDate, category, storageType, notes } = item
       await saveItem({
-        id: uuidv4(),
-        item,
-        expiryDate: details.expiryDate,
+        code,
+        name,
+        expiryDate,
         email,
-        notificationSent: false
+        category,
+        storageType,
+        notes
       })
     }
 

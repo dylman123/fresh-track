@@ -1,24 +1,35 @@
-import fs from 'fs'
-import path from 'path'
+import { Pool } from 'pg'
 import { ExpiryItem } from './types'
 
-const DB_PATH = path.join(process.cwd(), 'data', 'items.json')
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL as string,
+  ssl: {
+    rejectUnauthorized: false
+  }
+})
 
 export const saveItem = async (item: ExpiryItem) => {
-  let items: ExpiryItem[] = []
+  const query = `
+    INSERT INTO items (code, name, expiry_date, email, category, storage_type, notes)
+    VALUES ($1, $2, $3, $4, $5, $6, $7)
+  `
+  const values = [item.code, item.name, item.expiryDate, item.email, item.category, item.storageType, item.notes]
   
-  if (fs.existsSync(DB_PATH)) {
-    const data = fs.readFileSync(DB_PATH, 'utf-8')
-    items = JSON.parse(data)
-  }
-
-  items.push(item)
-  fs.writeFileSync(DB_PATH, JSON.stringify(items, null, 2))
+  await pool.query(query, values)
 }
 
 export const getItems = async (): Promise<ExpiryItem[]> => {
-  if (!fs.existsSync(DB_PATH)) return []
+  const result = await pool.query(`
+    SELECT 
+      code,
+      name,
+      expiry_date as "expiryDate",
+      email,
+      category,
+      storage_type as "storageType",
+      notes
+    FROM items
+  `)
   
-  const data = fs.readFileSync(DB_PATH, 'utf-8')
-  return JSON.parse(data)
+  return result.rows
 } 

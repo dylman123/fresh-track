@@ -4,20 +4,13 @@ import { useState } from 'react'
 import Image from 'next/image'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import { AnalyzedResults } from '../../../lib/types'
-
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
-}
+import { ExpiryItem } from '../../../lib/types'
+import { formatDate } from '../../../lib/util'
 
 export default function ReceiptUploader() {
   const [image, setImage] = useState<File | null>(null)
   const [preview, setPreview] = useState<string>('')
-  const [results, setResults] = useState<AnalyzedResults | null>(null)
+  const [results, setResults] = useState<ExpiryItem[]>([])
   const [loading, setLoading] = useState(false)
   const [email, setEmail] = useState('')
   const [isSaving, setIsSaving] = useState(false)
@@ -30,7 +23,7 @@ export default function ReceiptUploader() {
     }
   }
 
-  const saveItems = async (items: AnalyzedResults) => {
+  const saveItems = async (items: ExpiryItem[]) => {
     try {
       await fetch('/api/save-items', {
         method: 'POST',
@@ -63,7 +56,7 @@ export default function ReceiptUploader() {
       if (data.error) {
         toast.error(data.error)
       } else {
-        setResults(data as AnalyzedResults)
+        setResults(data as ExpiryItem[])
       }
     } catch (error) {
       console.error('Error analyzing receipt:', error)
@@ -102,7 +95,7 @@ export default function ReceiptUploader() {
         {loading ? 'Analyzing...' : 'Analyze Receipt'}
       </button>
 
-      {results && (
+      {results.length > 0 && (
         <div className="mt-8">
           <h2 className="text-xl font-semibold mb-4">Estimated Expiry Dates</h2>
           <div className="bg-white shadow rounded-lg overflow-x">
@@ -128,11 +121,14 @@ export default function ReceiptUploader() {
                     <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
                     </th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Notes
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {Object.entries(results).map(([item, details], index) => {
-                    const expiryDate = new Date(details.expiryDate)
+                  {results.map((item, index) => {
+                    const expiryDate = new Date(item.expiryDate)
                     const today = new Date()
                     const daysUntilExpiry = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
               
@@ -152,44 +148,33 @@ export default function ReceiptUploader() {
                     return (
                        <tr key={index} className="hover:bg-gray-50">
                         <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {item}
+                          {item.code}
                         </td>
                         <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {details.name}
+                          {item.name}
                         </td>
                         <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">
-                          {details.category}
+                          {item.category}
                          </td>
                         <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">
-                          {details.storageType}
+                          {item.storageType}
                         </td>
                         <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {formatDate(details.expiryDate)}
+                          {formatDate(item.expiryDate)}
                       </td>
                         <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm">
                           <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColor}`}>
                             {status}
                           </span>
                         </td>
+                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {item.notes}
+                        </td>
                       </tr>
                     )
                   })}
                 </tbody>
               </table>
-            </div>
-          </div>
-
-          <div>
-            <h3 className="text-xl font-semibold mb-4 mt-8">Additional Notes</h3>
-            <div className="space-y-2">
-              {Object.entries(results).map(([item, details], index) => (
-                details.notes && (
-                  <div key={index} className="p-3 bg-gray-50/50 rounded border border-gray-100">
-                    <h4 className="text-sm mb-0.5">{item}</h4>
-                    <p className="text-xs">{details.notes}</p>
-                  </div>
-                )
-              ))}
             </div>
           </div>
 

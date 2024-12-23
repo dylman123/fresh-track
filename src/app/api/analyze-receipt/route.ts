@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { AnalyzedResults } from '../../../../lib/types'
+import { ExpiryItem } from '../../../../lib/types'
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 })
@@ -53,9 +53,10 @@ Pantry Items:
 - Cereal: 2-3 months after opening
 - Canned goods: 3-5 days after opening when refrigerated
 
-Return the response as a JSON object with this structure:
-{
-  "EXACT_ITEM_CODE_FROM_RECEIPT": {
+Return the response as an array of JSON objects with this structure:
+[
+  {
+    "code": "EXACT_ITEM_CODE_FROM_RECEIPT",
     "name": "Human readable item name",
     "expiryDate": "YYYY-MM-DD",
     "category": "produce|dairy|meat|pantry",
@@ -95,14 +96,14 @@ IMPORTANT:
     })
 
     // Parse the response
-    let items: AnalyzedResults = {}
+    let items: ExpiryItem[] = []
     if (message.content[0].type === 'text') {
       const responseText = message.content[0].text
       console.log('Raw response:', responseText)
       
       try {
         // Extract JSON from response
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/)
+        const jsonMatch = responseText.match(/\[[\s\S]*\s*\]/)
         if (!jsonMatch) {
           console.error('No JSON found in response')
           return NextResponse.json(
@@ -129,21 +130,17 @@ IMPORTANT:
       }
     }
 
-    if (Object.keys(items).length === 0) {
+    if (items.length === 0) {
       return NextResponse.json({ error: 'Failed to analyze receipt' }, { status: 500 })
     }
 
     // Sort items by expiry date
-    const sortedItems = Object.entries(items)
-      .sort(([, a], [, b]) => {
+    const sortedItems = items
+      .sort((a, b) => {
         const dateA = new Date(a.expiryDate)
         const dateB = new Date(b.expiryDate)
         return dateA.getTime() - dateB.getTime()
       })
-      .reduce((acc, [key, value]) => ({
-        ...acc,
-        [key]: value
-      }), {})
 
     return NextResponse.json(sortedItems)
   } catch (error) {
