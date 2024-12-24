@@ -21,6 +21,10 @@ export default function Home() {
         <footer className="mt-8 text-center text-sm text-gray-200">
           <p>Never waste food again</p>
         </footer>
+
+        <div className="mt-4 text-center text-sm text-gray-200">
+          <p>Have feedback? Email <a href="mailto:dylan@dylanklein.dev" className="underline hover:text-white">dylan@dylanklein.dev</a></p>
+        </div>
       </div>
     </main>
   )
