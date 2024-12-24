@@ -10,10 +10,10 @@ const pool = new Pool({
 
 export const saveItem = async (item: ExpiryItem) => {
   const query = `
-    INSERT INTO items (code, name, expiry_date, email, category, storage_type, notes)
-    VALUES ($1, $2, $3, $4, $5, $6, $7)
+    INSERT INTO items (code, name, expiry_date, purchase_date, email, category, storage_type, notes)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
   `
-  const values = [item.code, item.name, item.expiryDate, item.email, item.category, item.storageType, item.notes]
+  const values = [item.code, item.name, item.expiryDate, item.purchaseDate, item.email, item.category, item.storageType, item.notes]
   
   await pool.query(query, values)
 }
@@ -24,6 +24,7 @@ export const getItems = async (): Promise<ExpiryItem[]> => {
       code,
       name,
       expiry_date as "expiryDate",
+      purchase_date as "purchaseDate",
       email,
       category,
       storage_type as "storageType",

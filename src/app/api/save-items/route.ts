@@ -16,11 +16,12 @@ export async function POST(request: NextRequest) {
 
     // Save all items first
     for (const item of items) {
-      const { code, name, expiryDate, category, storageType, notes } = item
+      const { code, name, expiryDate, purchaseDate, category, storageType, notes } = item
       await saveItem({
         code,
         name,
         expiryDate,
+        purchaseDate,
         email,
         category,
         storageType,
@@ -48,14 +49,21 @@ export async function POST(request: NextRequest) {
           </thead>
           <tbody>
             ${items.map(item => {
+              const purchaseDate = new Date(item.purchaseDate)
               const expiryDate = new Date(item.expiryDate)
               const today = new Date()
-              const daysUntilExpiry = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+              const totalDays = Math.ceil(
+                (expiryDate.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24)
+              )
+              const daysElapsed = Math.ceil(
+                (today.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24)
+              )
+              const daysRemaining = totalDays - daysElapsed
               
               let bgColor
-              if (daysUntilExpiry < 0) {
+              if (daysRemaining < 0) {
                 bgColor = '#fee2e2' // Light red for expired
-              } else if (daysUntilExpiry < 7) {
+              } else if (daysRemaining < 7) {
                 bgColor = '#fef3c7' // Light yellow for expiring soon
               } else {
                 bgColor = '#dcfce7' // Light green for good
@@ -68,10 +76,10 @@ export async function POST(request: NextRequest) {
                   <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${capitalizeFirstLetter(item.storageType)}</td>
                   <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">
                     ${formatDate(item.expiryDate)}
-                    ${daysUntilExpiry < 0 
+                    ${daysRemaining < 0 
                       ? ' (Expired)'
-                      : daysUntilExpiry < 7 
-                        ? ` (${daysUntilExpiry} days left)`
+                      : daysRemaining < 7 
+                        ? ` (${daysRemaining} days left)`
                         : ''
                     }
                   </td>
@@ -91,14 +99,21 @@ export async function POST(request: NextRequest) {
 You'll receive notifications 3 days before any items expire. Here's a summary of the items we're tracking for you:
 
 ${items.map(item => {
+  const purchaseDate = new Date(item.purchaseDate)
   const expiryDate = new Date(item.expiryDate)
   const today = new Date()
-  const daysUntilExpiry = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+  const totalDays = Math.ceil(
+    (expiryDate.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24)
+  )
+  const daysElapsed = Math.ceil(
+    (today.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24)
+  )
+  const daysRemaining = totalDays - daysElapsed
   
-  const status = daysUntilExpiry < 0 
+  const status = daysRemaining < 0 
     ? '(Expired)'
-    : daysUntilExpiry < 7 
-      ? `(${daysUntilExpiry} days left)`
+    : daysRemaining < 7 
+      ? `(${daysRemaining} days left)`
       : ''
 
   return `

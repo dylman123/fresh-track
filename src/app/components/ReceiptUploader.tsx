@@ -17,6 +17,9 @@ export default function ReceiptUploader() {
   const [isSaving, setIsSaving] = useState(false)
   const [isNotificationsEnabled, setIsNotificationsEnabled] = useState(false)
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
+  const [purchaseDate, setPurchaseDate] = useState<string>(
+    new Date().toISOString().split('T')[0]
+  )
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -69,7 +72,13 @@ export default function ReceiptUploader() {
       if (data.error) {
         toast.error(data.error)
       } else {
-        setResults(data as ExpiryItem[])
+        const items = data as ExpiryItem[]
+        // Set purchase date to today for all items
+        const today = new Date().toISOString()
+        items.forEach((item: ExpiryItem) => {
+          item.purchaseDate = today
+        })
+        setResults(items)
       }
     } catch (error) {
       console.error('Error analyzing receipt:', error)
@@ -99,22 +108,37 @@ export default function ReceiptUploader() {
       category: 'other',
       storageType: 'room temperature',
       expiryDate: new Date().toISOString(),
+      purchaseDate,
       notes: ''
     }
     setResults([newItem, ...results])
-    setEditingIndex(0) // Start editing the new item
+    setEditingIndex(0)
+  }
+
+  const handleSetPurchaseDate = (date: string) => {
+    setPurchaseDate(date)
+    const updatedResults = results.map((item: ExpiryItem) => {
+      const dateDiff = new Date(item.expiryDate).getTime() - new Date(item.purchaseDate).getTime()
+      const daysDiff = Math.ceil(dateDiff / (1000 * 60 * 60 * 24))
+      item.purchaseDate = date
+      item.expiryDate = new Date(new Date(date).getTime() + daysDiff * 24 * 60 * 60 * 1000).toISOString()
+      return item
+    })
+    setResults(updatedResults)
   }
 
   return (
     <div className="space-y-4">
 
       <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleImageUpload}
-          className="w-full"
-        />
+        <div className="flex flex-col gap-4">
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageUpload}
+            className="w-full"
+          />
+        </div>
       </div>
 
       {preview && (
@@ -148,6 +172,18 @@ export default function ReceiptUploader() {
         <div className="mt-8">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">Estimated Expiry Dates</h2>
+            <div className="flex items-center gap-2">
+            <label htmlFor="purchaseDate" className="text-sm text-gray">
+              Purchase Date:
+            </label>
+            <input
+                type="date"
+                id="purchaseDate"   
+                value={purchaseDate}
+                onChange={(e) => handleSetPurchaseDate(e.target.value)}
+                className="border rounded px-2 py-1 text-black"
+              />
+            </div>
             <button
               onClick={handleAddItem}
               className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
@@ -173,6 +209,9 @@ export default function ReceiptUploader() {
                       Storage
                     </th>
                     <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Purchase Date
+                    </th>
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Expiry Date
                     </th>
                     <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -188,16 +227,23 @@ export default function ReceiptUploader() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {results.map((item, index) => {
+                    const purchaseDate = new Date(item.purchaseDate)
                     const expiryDate = new Date(item.expiryDate)
                     const today = new Date()
-                    const daysUntilExpiry = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-              
+                    const totalDays = Math.ceil(
+                      (expiryDate.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24)
+                    )
+                    const daysElapsed = Math.ceil(
+                      (today.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24)
+                    )
+                    const daysRemaining = totalDays - daysElapsed
+                    
                     let status
                     let statusColor
-                    if (daysUntilExpiry < 0) {
+                    if (daysRemaining < 0) {
                       status = 'Expired'
                       statusColor = 'text-red-600 bg-red-100'
-                    } else if (daysUntilExpiry < 7) {
+                    } else if (daysRemaining < 7) {
                       status = 'Expiring Soon'
                       statusColor = 'text-yellow-600 bg-yellow-100'
                     } else {
@@ -263,6 +309,18 @@ export default function ReceiptUploader() {
                             </select>
                           ) : (
                             <span className="capitalize">{item.storageType}</span>
+                          )}
+                        </td>
+                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {isEditing ? (
+                            <input
+                              type="date"
+                              value={item.purchaseDate.split('T')[0]}
+                              onChange={(e) => handleEdit(index, 'purchaseDate', e.target.value)}
+                              className="w-full p-1 border rounded"
+                            />
+                          ) : (
+                            formatDate(item.purchaseDate)
                           )}
                         </td>
                         <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">

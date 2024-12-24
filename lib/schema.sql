@@ -10,6 +10,7 @@ CREATE TABLE items (
   code TEXT NOT NULL,
   name TEXT NOT NULL,
   expiry_date DATE NOT NULL,
+  purchase_date DATE NOT NULL,
   email TEXT NOT NULL,
   notification_sent BOOLEAN DEFAULT FALSE,
   category TEXT NOT NULL,

@@ -4,6 +4,7 @@ export interface ExpiryItem {
   expiryDate: string
   category: string
   storageType: string
+  purchaseDate: string
   notes: string
   id?: string
   createdAt?: string
