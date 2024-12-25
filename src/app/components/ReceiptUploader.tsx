@@ -191,192 +191,196 @@ export default function ReceiptUploader() {
               Add Item
             </button>
           </div>
-          <div className="bg-white shadow rounded-lg overflow-x">
+          <div className="bg-white shadow rounded-lg relative">
             <div className="overflow-x-auto">
-              <table className="min-w-full table-auto">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Item Code
-                    </th>
-                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Name
-                    </th>
-                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Category
-                    </th>
-                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Storage
-                    </th>
-                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Purchase Date
-                    </th>
-                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Expiry Date
-                    </th>
-                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Notes
-                    </th>
-                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {results.map((item, index) => {
-                    const purchaseDate = new Date(item.purchaseDate)
-                    const expiryDate = new Date(item.expiryDate)
-                    const today = new Date()
-                    const totalDays = Math.ceil(
-                      (expiryDate.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24)
-                    )
-                    const daysElapsed = Math.ceil(
-                      (today.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24)
-                    )
-                    const daysRemaining = totalDays - daysElapsed
-                    
-                    let status
-                    let statusColor
-                    if (daysRemaining < 0) {
-                      status = 'Expired'
-                      statusColor = 'text-red-600 bg-red-100'
-                    } else if (daysRemaining < 7) {
-                      status = 'Expiring Soon'
-                      statusColor = 'text-yellow-600 bg-yellow-100'
-                    } else {
-                      status = 'Good'
-                      statusColor = 'text-green-600 bg-green-100'
-                    }
+              <div className="min-w-[1200px] relative">
+                <table className="w-full table-auto">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Item Code
+                      </th>
+                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Name
+                      </th>
+                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Category
+                      </th>
+                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Storage
+                      </th>
+                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Purchase Date
+                      </th>
+                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Expiry Date
+                      </th>
+                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Notes
+                      </th>
+                      <th className="sticky right-0 bg-gray-50 px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider shadow-l">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {results.map((item, index) => {
+                      const purchaseDate = new Date(item.purchaseDate)
+                      const expiryDate = new Date(item.expiryDate)
+                      const today = new Date()
+                      const totalDays = Math.ceil(
+                        (expiryDate.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24)
+                      )
+                      const daysElapsed = Math.ceil(
+                        (today.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24)
+                      )
+                      const daysRemaining = totalDays - daysElapsed
+                      
+                      let status
+                      let statusColor
+                      if (daysRemaining < 0) {
+                        status = 'Expired'
+                        statusColor = 'text-red-600 bg-red-100'
+                      } else if (daysRemaining < 7) {
+                        status = 'Expiring Soon'
+                        statusColor = 'text-yellow-600 bg-yellow-100'
+                      } else {
+                        status = 'Good'
+                        statusColor = 'text-green-600 bg-green-100'
+                      }
 
-                    const isEditing = editingIndex === index
+                      const isEditing = editingIndex === index
 
-                    return (
-                       <tr key={index} className="hover:bg-gray-50">
-                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {isEditing ? (
-                            <input
-                              type="text"
-                              value={item.code}
-                              onChange={(e) => handleEdit(index, 'code', e.target.value)}
-                              className="w-full p-1 border rounded"
-                            />
-                          ) : (
-                            item.code
-                          )}
-                        </td>
-                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {isEditing ? (
-                            <input
-                              type="text"
-                              value={item.name}
-                              onChange={(e) => handleEdit(index, 'name', e.target.value)}
-                              className="w-full p-1 border rounded"
-                            />
-                          ) : (
-                            item.name
-                          )}
-                        </td>
-                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {isEditing ? (
-                            <select
-                              value={item.category}
-                              onChange={(e) => handleEdit(index, 'category', e.target.value)}
-                              className="w-full p-1 border rounded"
-                            >
-                              <option value="produce">Produce</option>
-                              <option value="dairy">Dairy</option>
-                              <option value="meat">Meat</option>
-                              <option value="pantry">Pantry</option>
-                              <option value="other">Other</option>
-                            </select>
-                          ) : (
-                            <span className="capitalize">{item.category}</span>
-                          )}
-                        </td>
-                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {isEditing ? (
-                            <select
-                              value={item.storageType}
-                              onChange={(e) => handleEdit(index, 'storageType', e.target.value)}
-                              className="w-full p-1 border rounded"
-                            >
-                              <option value="refrigerated">Refrigerated</option>
-                              <option value="frozen">Frozen</option>
-                              <option value="room temperature">Room Temperature</option>
-                            </select>
-                          ) : (
-                            <span className="capitalize">{item.storageType}</span>
-                          )}
-                        </td>
-                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {isEditing ? (
-                            <input
-                              type="date"
-                              value={item.purchaseDate.split('T')[0]}
-                              onChange={(e) => handleEdit(index, 'purchaseDate', e.target.value)}
-                              className="w-full p-1 border rounded"
-                            />
-                          ) : (
-                            formatDate(item.purchaseDate)
-                          )}
-                        </td>
-                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {isEditing ? (
-                            <input
-                              type="date"
-                              value={item.expiryDate.split('T')[0]}
-                              onChange={(e) => handleEdit(index, 'expiryDate', e.target.value)}
-                              className="w-full p-1 border rounded"
-                            />
-                          ) : (
-                            formatDate(item.expiryDate)
-                          )}
-                        </td>
-                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm">
-                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColor}`}>
-                            {status}
-                          </span>
-                        </td>
-                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {isEditing ? (
-                            <input
-                              type="text"
-                              value={item.notes || ''}
-                              onChange={(e) => handleEdit(index, 'notes', e.target.value)}
-                              className="w-full p-1 border rounded"
-                            />
-                          ) : (
-                            item.notes
-                          )}
-                        </td>
-                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => setEditingIndex(isEditing ? null : index)}
-                              className={`px-3 py-1 rounded ${
-                                isEditing 
-                                  ? 'bg-green-500 hover:bg-green-600 text-white' 
-                                  : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
-                              }`}
-                            >
-                              {isEditing ? 'Save' : 'Edit'}
-                            </button>
-                            <button
-                              onClick={() => handleDelete(index)}
-                              className="px-3 py-1 rounded bg-red-100 hover:bg-red-200 text-red-600"
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
+                      return (
+                        <tr key={index} className={`hover:bg-gray-50 ${isEditing ? 'bg-blue-50' : ''}`}>
+                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {isEditing ? (
+                              <input
+                                type="text"
+                                value={item.code}
+                                onChange={(e) => handleEdit(index, 'code', e.target.value)}
+                                className="w-full p-1 border rounded"
+                              />
+                            ) : (
+                              item.code
+                            )}
+                          </td>
+                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {isEditing ? (
+                              <input
+                                type="text"
+                                value={item.name}
+                                onChange={(e) => handleEdit(index, 'name', e.target.value)}
+                                className="w-full p-1 border rounded"
+                              />
+                            ) : (
+                              item.name
+                            )}
+                          </td>
+                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {isEditing ? (
+                              <select
+                                value={item.category}
+                                onChange={(e) => handleEdit(index, 'category', e.target.value)}
+                                className="w-full p-1 border rounded"
+                              >
+                                <option value="produce">Produce</option>
+                                <option value="dairy">Dairy</option>
+                                <option value="meat">Meat</option>
+                                <option value="pantry">Pantry</option>
+                                <option value="other">Other</option>
+                              </select>
+                            ) : (
+                              <span className="capitalize">{item.category}</span>
+                            )}
+                          </td>
+                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {isEditing ? (
+                              <select
+                                value={item.storageType}
+                                onChange={(e) => handleEdit(index, 'storageType', e.target.value)}
+                                className="w-full p-1 border rounded"
+                              >
+                                <option value="refrigerated">Refrigerated</option>
+                                <option value="frozen">Frozen</option>
+                                <option value="room temperature">Room Temperature</option>
+                              </select>
+                            ) : (
+                              <span className="capitalize">{item.storageType}</span>
+                            )}
+                          </td>
+                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {isEditing ? (
+                              <input
+                                type="date"
+                                value={item.purchaseDate.split('T')[0]}
+                                onChange={(e) => handleEdit(index, 'purchaseDate', e.target.value)}
+                                className="w-full p-1 border rounded"
+                              />
+                            ) : (
+                              formatDate(item.purchaseDate)
+                            )}
+                          </td>
+                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {isEditing ? (
+                              <input
+                                type="date"
+                                value={item.expiryDate.split('T')[0]}
+                                onChange={(e) => handleEdit(index, 'expiryDate', e.target.value)}
+                                className="w-full p-1 border rounded"
+                              />
+                            ) : (
+                              formatDate(item.expiryDate)
+                            )}
+                          </td>
+                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm">
+                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColor}`}>
+                              {status}
+                            </span>
+                          </td>
+                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {isEditing ? (
+                              <input
+                                type="text"
+                                value={item.notes || ''}
+                                onChange={(e) => handleEdit(index, 'notes', e.target.value)}
+                                className="w-full p-1 border rounded"
+                              />
+                            ) : (
+                              item.notes
+                            )}
+                          </td>
+                          <td className="sticky right-0 px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 bg-white shadow-l">
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => setEditingIndex(editingIndex === index ? null : index)}
+                                className={`px-3 py-1 rounded ${
+                                  editingIndex === index 
+                                    ? 'bg-green-500 hover:bg-green-600 text-white' 
+                                    : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
+                                }`}
+                              >
+                                {editingIndex === index ? 'Save' : 'Edit'}
+                              </button>
+                              {editingIndex === index && (
+                                <button
+                                  onClick={() => handleDelete(index)}
+                                  className="px-3 py-1 rounded bg-red-100 hover:bg-red-200 text-red-600"
+                                >
+                                  Delete
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
 

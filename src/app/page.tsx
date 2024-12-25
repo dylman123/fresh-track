@@ -3,7 +3,7 @@ import ReceiptUploader from './components/ReceiptUploader'
 export default function Home() {
   return (
     <main className="min-h-screen p-4 sm:p-8">
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         {/* Header Section */}
         <div className="text-center mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold mb-4">Fresh Track</h1>
