@@ -170,25 +170,25 @@ export default function ReceiptUploader() {
 
       {results.length > 0 && (
         <div className="mt-8">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Estimated Expiry Dates</h2>
+          <div className="flex flex-col sm:flex-row justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold mb-4 sm:mb-0">Estimated Expiry Dates</h2>
             <div className="flex items-center gap-2">
-            <label htmlFor="purchaseDate" className="text-sm text-gray">
-              Purchase Date:
-            </label>
-            <input
-                type="date"
-                id="purchaseDate"   
-                value={purchaseDate}
-                onChange={(e) => handleSetPurchaseDate(e.target.value)}
-                className="border rounded px-2 py-1 text-black"
-              />
+                <label htmlFor="purchaseDate" className="text-sm text-gray">
+                Purchase Date:
+                </label>
+                <input
+                    type="date"
+                    id="purchaseDate"   
+                    value={purchaseDate}
+                    onChange={(e) => handleSetPurchaseDate(e.target.value)}
+                    className="border rounded px-2 py-1 text-black"
+                />
             </div>
             <button
-              onClick={handleAddItem}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+            onClick={handleAddItem}
+            className="bg-blue-500 hover:bg-blue-600 text-white mt-4 sm:mt-0 px-4 py-2 rounded"
             >
-              Add Item
+            Add Item
             </button>
           </div>
           <div className="bg-white shadow rounded-lg relative">
@@ -198,25 +198,22 @@ export default function ReceiptUploader() {
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Item Code
+                        Name
                       </th>
                       <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Name
+                        Status
+                      </th>
+                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Expiry Date
+                      </th>
+                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Item Code
                       </th>
                       <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Category
                       </th>
                       <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Storage
-                      </th>
-                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Purchase Date
-                      </th>
-                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Expiry Date
-                      </th>
-                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Status
                       </th>
                       <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Notes
@@ -226,7 +223,7 @@ export default function ReceiptUploader() {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-gray-50 divide-y divide-gray-200">
                     {results.map((item, index) => {
                       const purchaseDate = new Date(item.purchaseDate)
                       const expiryDate = new Date(item.expiryDate)
@@ -256,7 +253,36 @@ export default function ReceiptUploader() {
 
                       return (
                         <tr key={index} className={`hover:bg-gray-50 ${isEditing ? 'bg-blue-50' : ''}`}>
-                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          <td className="px-4 sm:px-6 py-4 whitespace-normal text-sm font-medium text-gray-900 max-w-[200px]">
+                            {isEditing ? (
+                              <input
+                                type="text"
+                                value={item.name}
+                                onChange={(e) => handleEdit(index, 'name', e.target.value)}
+                                className="w-full p-1 border rounded"
+                              />
+                            ) : (
+                              <div className="break-words">{item.name}</div>
+                            )}
+                          </td>
+                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm">
+                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColor}`}>
+                              {status}
+                            </span>
+                          </td>
+                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {isEditing ? (
+                              <input
+                                type="date"
+                                value={item.expiryDate.split('T')[0]}
+                                onChange={(e) => handleEdit(index, 'expiryDate', e.target.value)}
+                                className="w-full p-1 border rounded"
+                              />
+                            ) : (
+                              formatDate(item.expiryDate)
+                            )}
+                          </td>
+                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {isEditing ? (
                               <input
                                 type="text"
@@ -266,18 +292,6 @@ export default function ReceiptUploader() {
                               />
                             ) : (
                               item.code
-                            )}
-                          </td>
-                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {isEditing ? (
-                              <input
-                                type="text"
-                                value={item.name}
-                                onChange={(e) => handleEdit(index, 'name', e.target.value)}
-                                className="w-full p-1 border rounded"
-                              />
-                            ) : (
-                              item.name
                             )}
                           </td>
                           <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -311,35 +325,6 @@ export default function ReceiptUploader() {
                             ) : (
                               <span className="capitalize">{item.storageType}</span>
                             )}
-                          </td>
-                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {isEditing ? (
-                              <input
-                                type="date"
-                                value={item.purchaseDate.split('T')[0]}
-                                onChange={(e) => handleEdit(index, 'purchaseDate', e.target.value)}
-                                className="w-full p-1 border rounded"
-                              />
-                            ) : (
-                              formatDate(item.purchaseDate)
-                            )}
-                          </td>
-                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {isEditing ? (
-                              <input
-                                type="date"
-                                value={item.expiryDate.split('T')[0]}
-                                onChange={(e) => handleEdit(index, 'expiryDate', e.target.value)}
-                                className="w-full p-1 border rounded"
-                              />
-                            ) : (
-                              formatDate(item.expiryDate)
-                            )}
-                          </td>
-                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm">
-                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColor}`}>
-                              {status}
-                            </span>
                           </td>
                           <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {isEditing ? (
