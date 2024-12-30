@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import Image from 'next/image'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -20,6 +20,7 @@ export default function ReceiptUploader() {
   const [purchaseDate, setPurchaseDate] = useState<string>(
     new Date().toISOString().split('T')[0]
   )
+  const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -127,6 +128,16 @@ export default function ReceiptUploader() {
     setResults(updatedResults)
   }
 
+  const toggleExpanded = (index: number) => {
+    const newExpandedRows = new Set(expandedRows);
+    if (newExpandedRows.has(index)) {
+      newExpandedRows.delete(index);
+    } else {
+      newExpandedRows.add(index);
+    }
+    setExpandedRows(newExpandedRows);
+  };
+
   return (
     <div className="space-y-4">
 
@@ -192,7 +203,8 @@ export default function ReceiptUploader() {
             </button>
           </div>
           <div className="bg-white shadow rounded-lg relative">
-            <div className="overflow-x-auto">
+            {/* Desktop View */}
+            <div className="hidden sm:block">
               <div className="min-w-[1200px] relative">
                 <table className="w-full table-auto">
                   <thead className="bg-gray-50">
@@ -207,18 +219,6 @@ export default function ReceiptUploader() {
                         Expiry Date
                       </th>
                       <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Item Code
-                      </th>
-                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Category
-                      </th>
-                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Storage
-                      </th>
-                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Notes
-                      </th>
-                      <th className="sticky right-0 bg-gray-50 px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider shadow-l">
                         Actions
                       </th>
                     </tr>
@@ -250,27 +250,224 @@ export default function ReceiptUploader() {
                       }
 
                       const isEditing = editingIndex === index
+                      const isExpanded = expandedRows.has(index);
 
                       return (
-                        <tr key={index} className={`hover:bg-gray-50 ${isEditing ? 'bg-blue-50' : ''}`}>
-                          <td className="px-4 sm:px-6 py-4 whitespace-normal text-sm font-medium text-gray-900 max-w-[200px]">
-                            {isEditing ? (
-                              <input
-                                type="text"
-                                value={item.name}
-                                onChange={(e) => handleEdit(index, 'name', e.target.value)}
-                                className="w-full p-1 border rounded"
-                              />
-                            ) : (
-                              <div className="break-words">{item.name}</div>
-                            )}
+                        <Fragment key={index}>
+                          <tr className={`hover:bg-gray-50 ${isEditing ? 'bg-blue-50' : ''}`}>
+                            <td className="px-4 py-4 text-sm font-medium text-gray-900">
+                              <div className="max-w-[150px] break-words">
+                                {isEditing ? (
+                                  <input
+                                    type="text"
+                                    value={item.name}
+                                    onChange={(e) => handleEdit(index, 'name', e.target.value)}
+                                    className="w-full p-1 border rounded"
+                                  />
+                                ) : (
+                                  item.name
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-4 py-4">
+                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColor}`}>
+                                {status}
+                              </span>
+                            </td>
+                            <td className="px-4 py-4 text-sm text-gray-500">
+                              {isEditing ? (
+                                <input
+                                  type="date"
+                                  value={item.expiryDate.split('T')[0]}
+                                  onChange={(e) => handleEdit(index, 'expiryDate', e.target.value)}
+                                  className="w-full p-1 border rounded"
+                                />
+                              ) : (
+                                formatDate(item.expiryDate)
+                              )}
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap w-[120px]">
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => toggleExpanded(index)}
+                                  className="p-2 rounded bg-gray-100 hover:bg-gray-200 text-gray-600"
+                                >
+                                  {isExpanded ? 'Less' : 'More'}
+                                </button>
+                                <button
+                                  onClick={() => setEditingIndex(editingIndex === index ? null : index)}
+                                  className={`p-2 rounded ${
+                                    editingIndex === index 
+                                      ? 'bg-green-500 hover:bg-green-600 text-white' 
+                                      : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
+                                  }`}
+                                >
+                                  {editingIndex === index ? 'Save' : 'Edit'}
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                          {isExpanded && (
+                            <tr className="bg-gray-50">
+                              <td colSpan={4} className="px-4 py-4">
+                                <div className="space-y-2">
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <div className="text-sm font-medium text-gray-500">Item Code:</div>
+                                    <div className="text-sm text-gray-900">
+                                      {isEditing ? (
+                                        <input
+                                          type="text"
+                                          value={item.code}
+                                          onChange={(e) => handleEdit(index, 'code', e.target.value)}
+                                          className="w-full p-1 border rounded"
+                                        />
+                                      ) : (
+                                        item.code
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <div className="text-sm font-medium text-gray-500">Category:</div>
+                                    <div className="text-sm text-gray-900">
+                                      {isEditing ? (
+                                        <select
+                                          value={item.category}
+                                          onChange={(e) => handleEdit(index, 'category', e.target.value)}
+                                          className="w-full p-1 border rounded"
+                                        >
+                                          <option value="produce">Produce</option>
+                                          <option value="dairy">Dairy</option>
+                                          <option value="meat">Meat</option>
+                                          <option value="pantry">Pantry</option>
+                                          <option value="other">Other</option>
+                                        </select>
+                                      ) : (
+                                        <span className="capitalize">{item.category}</span>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <div className="text-sm font-medium text-gray-500">Storage:</div>
+                                    <div className="text-sm text-gray-900">
+                                      {isEditing ? (
+                                        <select
+                                          value={item.storageType}
+                                          onChange={(e) => handleEdit(index, 'storageType', e.target.value)}
+                                          className="w-full p-1 border rounded"
+                                        >
+                                          <option value="refrigerated">Refrigerated</option>
+                                          <option value="frozen">Frozen</option>
+                                          <option value="room temperature">Room Temperature</option>
+                                        </select>
+                                      ) : (
+                                        <span className="capitalize">{item.storageType}</span>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <div className="text-sm font-medium text-gray-500">Notes:</div>
+                                    <div className="text-sm text-gray-900">
+                                      {isEditing ? (
+                                        <input
+                                          type="text"
+                                          value={item.notes || ''}
+                                          onChange={(e) => handleEdit(index, 'notes', e.target.value)}
+                                          className="w-full p-1 border rounded"
+                                        />
+                                      ) : (
+                                        item.notes || '-'
+                                      )}
+                                    </div>
+                                  </div>
+                                  {isEditing && (
+                                    <div className="pt-2">
+                                      <button
+                                        onClick={() => handleDelete(index)}
+                                        className="px-3 py-1 rounded bg-red-100 hover:bg-red-200 text-red-600"
+                                      >
+                                        Delete
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </Fragment>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Mobile View */}
+            <div className="block sm:hidden">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Name
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Expiry
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-gray-50 divide-y divide-gray-200">
+                  {results.map((item, index) => {
+                    const isEditing = editingIndex === index
+                    const isExpanded = expandedRows.has(index);
+                    // Calculate status colors
+                    const purchaseDate = new Date(item.purchaseDate)
+                    const expiryDate = new Date(item.expiryDate)
+                    const today = new Date()
+                    const totalDays = Math.ceil(
+                      (expiryDate.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24)
+                    )
+                    const daysElapsed = Math.ceil(
+                      (today.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24)
+                    )
+                    const daysRemaining = totalDays - daysElapsed
+                    
+                    let status
+                    let statusColor
+                    let expiryColor
+                    if (daysRemaining < 0) {
+                      status = 'Expired'
+                      statusColor = 'text-red-600 bg-red-100'
+                      expiryColor = 'text-red-600'
+                    } else if (daysRemaining < 7) {
+                      status = 'Expiring Soon'
+                      statusColor = 'text-yellow-600 bg-yellow-100'
+                      expiryColor = 'text-yellow-600'
+                    } else {
+                      status = 'Good'
+                      statusColor = 'text-green-600 bg-green-100'
+                      expiryColor = 'text-green-600'
+                    }
+
+                    return (
+                      <Fragment key={index}>
+                        <tr className={`hover:bg-gray-50 ${isEditing ? 'bg-blue-50' : ''}`}>
+                          <td className="px-4 py-4 text-sm font-medium text-gray-900">
+                            <div className="max-w-[150px] break-words">
+                              {isEditing ? (
+                                <input
+                                  type="text"
+                                  value={item.name}
+                                  onChange={(e) => handleEdit(index, 'name', e.target.value)}
+                                  className="w-full p-1 border rounded"
+                                />
+                              ) : (
+                                item.name
+                              )}
+                            </div>
                           </td>
-                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm">
-                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColor}`}>
-                              {status}
-                            </span>
-                          </td>
-                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <td className="px-4 py-4 text-sm">
                             {isEditing ? (
                               <input
                                 type="date"
@@ -279,93 +476,133 @@ export default function ReceiptUploader() {
                                 className="w-full p-1 border rounded"
                               />
                             ) : (
-                              formatDate(item.expiryDate)
+                              <span className={`font-medium ${expiryColor}`}>
+                                {formatDate(item.expiryDate)}
+                              </span>
                             )}
                           </td>
-                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {isEditing ? (
-                              <input
-                                type="text"
-                                value={item.code}
-                                onChange={(e) => handleEdit(index, 'code', e.target.value)}
-                                className="w-full p-1 border rounded"
-                              />
-                            ) : (
-                              item.code
-                            )}
-                          </td>
-                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {isEditing ? (
-                              <select
-                                value={item.category}
-                                onChange={(e) => handleEdit(index, 'category', e.target.value)}
-                                className="w-full p-1 border rounded"
-                              >
-                                <option value="produce">Produce</option>
-                                <option value="dairy">Dairy</option>
-                                <option value="meat">Meat</option>
-                                <option value="pantry">Pantry</option>
-                                <option value="other">Other</option>
-                              </select>
-                            ) : (
-                              <span className="capitalize">{item.category}</span>
-                            )}
-                          </td>
-                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {isEditing ? (
-                              <select
-                                value={item.storageType}
-                                onChange={(e) => handleEdit(index, 'storageType', e.target.value)}
-                                className="w-full p-1 border rounded"
-                              >
-                                <option value="refrigerated">Refrigerated</option>
-                                <option value="frozen">Frozen</option>
-                                <option value="room temperature">Room Temperature</option>
-                              </select>
-                            ) : (
-                              <span className="capitalize">{item.storageType}</span>
-                            )}
-                          </td>
-                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {isEditing ? (
-                              <input
-                                type="text"
-                                value={item.notes || ''}
-                                onChange={(e) => handleEdit(index, 'notes', e.target.value)}
-                                className="w-full p-1 border rounded"
-                              />
-                            ) : (
-                              item.notes
-                            )}
-                          </td>
-                          <td className="sticky right-0 px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 bg-white shadow-l">
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => setEditingIndex(editingIndex === index ? null : index)}
-                                className={`px-3 py-1 rounded ${
-                                  editingIndex === index 
-                                    ? 'bg-green-500 hover:bg-green-600 text-white' 
-                                    : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
-                                }`}
-                              >
-                                {editingIndex === index ? 'Save' : 'Edit'}
-                              </button>
-                              {editingIndex === index && (
-                                <button
-                                  onClick={() => handleDelete(index)}
-                                  className="px-3 py-1 rounded bg-red-100 hover:bg-red-200 text-red-600"
-                                >
-                                  Delete
-                                </button>
-                              )}
-                            </div>
+                          <td className="px-4 py-4">
+                            <button
+                              onClick={() => setEditingIndex(editingIndex === index ? null : index)}
+                              className={`px-3 py-1 rounded ${
+                                editingIndex === index 
+                                  ? 'bg-green-500 hover:bg-green-600 text-white' 
+                                  : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
+                              }`}
+                            >
+                              {editingIndex === index ? 'Save' : 'Edit'}
+                            </button>
                           </td>
                         </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
+                        <tr className="bg-gray-50 border-b">
+                          <td colSpan={3} className="px-4">
+                            <button
+                              onClick={() => toggleExpanded(index)}
+                              className="w-full text-gray-500 text-sm flex items-center justify-center"
+                            >
+                              {isExpanded ? '▲ Less Details' : '▼ More Details'}
+                            </button>
+                          </td>
+                        </tr>
+                        {isExpanded && (
+                          <tr className="bg-gray-50">
+                            <td colSpan={3} className="px-4 py-4">
+                              <div className="space-y-2">
+                                <div className="grid grid-cols-2 gap-2">
+                                  <div className="text-sm font-medium text-gray-500">Status:</div>
+                                  <div className="text-sm text-gray-900">
+                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColor}`}>
+                                      {status}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2">
+                                  <div className="text-sm font-medium text-gray-500">Item Code:</div>
+                                  <div className="text-sm text-gray-900">
+                                    {isEditing ? (
+                                      <input
+                                        type="text"
+                                        value={item.code}
+                                        onChange={(e) => handleEdit(index, 'code', e.target.value)}
+                                        className="w-full p-1 border rounded"
+                                      />
+                                    ) : (
+                                      item.code
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2">
+                                  <div className="text-sm font-medium text-gray-500">Category:</div>
+                                  <div className="text-sm text-gray-900">
+                                    {isEditing ? (
+                                      <select
+                                        value={item.category}
+                                        onChange={(e) => handleEdit(index, 'category', e.target.value)}
+                                        className="w-full p-1 border rounded"
+                                      >
+                                        <option value="produce">Produce</option>
+                                        <option value="dairy">Dairy</option>
+                                        <option value="meat">Meat</option>
+                                        <option value="pantry">Pantry</option>
+                                        <option value="other">Other</option>
+                                      </select>
+                                    ) : (
+                                      <span className="capitalize">{item.category}</span>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2">
+                                  <div className="text-sm font-medium text-gray-500">Storage:</div>
+                                  <div className="text-sm text-gray-900">
+                                    {isEditing ? (
+                                      <select
+                                        value={item.storageType}
+                                        onChange={(e) => handleEdit(index, 'storageType', e.target.value)}
+                                        className="w-full p-1 border rounded"
+                                      >
+                                        <option value="refrigerated">Refrigerated</option>
+                                        <option value="frozen">Frozen</option>
+                                        <option value="room temperature">Room Temperature</option>
+                                      </select>
+                                    ) : (
+                                      <span className="capitalize">{item.storageType}</span>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2">
+                                  <div className="text-sm font-medium text-gray-500">Notes:</div>
+                                  <div className="text-sm text-gray-900">
+                                    {isEditing ? (
+                                      <input
+                                        type="text"
+                                        value={item.notes || ''}
+                                        onChange={(e) => handleEdit(index, 'notes', e.target.value)}
+                                        className="w-full p-1 border rounded"
+                                      />
+                                    ) : (
+                                      item.notes || '-'
+                                    )}
+                                  </div>
+                                </div>
+                                {isEditing && (
+                                  <div className="pt-2">
+                                    <button
+                                      onClick={() => handleDelete(index)}
+                                      className="px-3 py-1 rounded bg-red-100 hover:bg-red-200 text-red-600"
+                                    >
+                                      Delete
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </Fragment>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
 

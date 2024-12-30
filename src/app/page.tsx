@@ -2,11 +2,11 @@ import ReceiptUploader from './components/ReceiptUploader'
 
 export default function Home() {
   return (
-    <main className="min-h-screen p-4 sm:p-8">
+    <main className="min-h-screen p-1">
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
         <div className="text-center mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold mb-4">Fresh Track</h1>
+          <h1 className="text-3xl sm:text-5xl font-bold mb-4">Fresh Track</h1>
           <p className="text-sm sm:text-base text-gray-200 px-4">
             Upload your grocery receipt to get estimated expiry dates for your items.
           </p>
