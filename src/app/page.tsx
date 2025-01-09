@@ -13,7 +13,7 @@ export default function Home() {
             <Image src={broccoli} alt="Broccoli" className="w-16 h-16 mb-4" />
           </div>
           <p className="text-sm sm:text-base text-gray-200 px-4">
-            Upload your grocery receipt to get estimated expiry dates for your items.
+            Get notified when your groceries are about to expire. All you need is a photo of your grocery receipt.
           </p>
         </div>
 
