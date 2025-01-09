@@ -205,7 +205,7 @@ export default function ReceiptUploader() {
           <div className="bg-white shadow rounded-lg relative">
             {/* Desktop View */}
             <div className="hidden sm:block">
-              <div className="min-w-[1200px] relative">
+              <div className="relative">
                 <table className="w-full table-auto">
                   <thead className="bg-gray-50">
                     <tr>
