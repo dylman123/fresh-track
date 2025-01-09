@@ -1,12 +1,17 @@
 import ReceiptUploader from './components/ReceiptUploader'
-
+import broccoli from '../../public/broccoli.png'
+import Image from 'next/image'
 export default function Home() {
   return (
     <main className="min-h-screen p-1">
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl sm:text-5xl font-bold mb-4">Fresh Track</h1>
+          <div className="flex justify-center items-center gap-4 mt-14 mb-4">
+            <Image src={broccoli} alt="Broccoli" className="w-16 h-16 mb-4" />
+            <h1 className="text-3xl sm:text-5xl font-bold">Fresh Track</h1>
+            <Image src={broccoli} alt="Broccoli" className="w-16 h-16 mb-4" />
+          </div>
           <p className="text-sm sm:text-base text-gray-200 px-4">
             Upload your grocery receipt to get estimated expiry dates for your items.
           </p>
